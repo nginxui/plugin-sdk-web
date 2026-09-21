@@ -1,0 +1,55 @@
+{
+  "name": "@nginx-ui/plugin-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for NGINX UI browser plugin bundles",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    },
+    "./page": {
+      "types": "./dist/page.d.ts",
+      "import": "./dist/page.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun run build:clean && bun run build:js && bun run build:types",
+    "build:clean": "rm -rf dist",
+    "build:js": "bun build src/index.ts --outdir dist --format esm --target browser && bun build src/vite.ts --outdir dist --format esm --target node --external vite && bun build src/page.ts --outdir dist --format esm --target browser --minify",
+    "build:types": "tsc -p tsconfig.json",
+    "test": "bun test",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "vite": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/0xJacky/nginx-ui-plugin-sdk-web"
+  },
+  "keywords": [
+    "nginx-ui",
+    "plugin",
+    "sdk"
+  ]
+}
