@@ -1,4 +1,4 @@
-# @nginx-ui/plugin-sdk
+# @nginxui/plugin-sdk
 
 TypeScript SDK for [NGINX UI](https://github.com/0xJacky/nginx-ui) browser
 plugin bundles: the types the host runtime exposes on `window.NginxUI`, a
@@ -13,13 +13,13 @@ only describes their shapes.
 ## Install
 
 ```bash
-bun add -d @nginx-ui/plugin-sdk
+bun add -d @nginxui/plugin-sdk
 ```
 
-## `@nginx-ui/plugin-sdk` — types and runtime helpers
+## `@nginxui/plugin-sdk` — types and runtime helpers
 
 ```ts
-import { defineNginxUIPlugin, registerPlugin, useShared } from '@nginx-ui/plugin-sdk'
+import { defineNginxUIPlugin, registerPlugin, useShared } from '@nginxui/plugin-sdk'
 import MySlot from './MySlot.vue'
 
 const plugin = defineNginxUIPlugin({
@@ -36,12 +36,12 @@ registerPlugin('io.github.example.myplugin', plugin)
 antdvNext, antdvIcons, vueuse, gettext, the host http client, and the
 `versions` map), typed but without importing any of those packages.
 
-## `@nginx-ui/plugin-sdk/vite` — build preset
+## `@nginxui/plugin-sdk/vite` — build preset
 
 ```ts
 // vite.config.ts
 import vue from '@vitejs/plugin-vue'
-import { nginxUiPlugin } from '@nginx-ui/plugin-sdk/vite'
+import { nginxUiPlugin } from '@nginxui/plugin-sdk/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
@@ -56,7 +56,7 @@ Or, for a project with nothing else to configure, use the ready-made config:
 
 ```ts
 // vite.config.ts
-import { defineNginxUiPluginConfig } from '@nginx-ui/plugin-sdk/vite'
+import { defineNginxUiPluginConfig } from '@nginxui/plugin-sdk/vite'
 
 export default defineNginxUiPluginConfig({ id: 'io.github.example.myplugin' })
 ```
@@ -101,14 +101,14 @@ export default defineNginxUiPluginConfig({ id: 'io.github.example.myplugin' })
   `webapp` inside the plugin repository — the convention used by the
   official plugins.
 
-## `@nginx-ui/plugin-sdk/page` — zero-build iframe pages
+## `@nginxui/plugin-sdk/page` — zero-build iframe pages
 
 For a `webapp.pages` entry (a static HTML page with no build step), served
 inside the host's iframe wrapper:
 
 ```html
 <script type="module">
-  import { requestToken, watchTheme } from 'https://esm.sh/@nginx-ui/plugin-sdk/page'
+  import { requestToken, watchTheme } from 'https://esm.sh/@nginxui/plugin-sdk/page'
 
   const token = await requestToken()
   watchTheme(theme => console.log('host theme is now', theme))
