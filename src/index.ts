@@ -117,6 +117,21 @@ export interface NginxUIPlugin {
   teardown?: () => void
 }
 
+/** A DNS credential as the host's credential editor returns it. */
+export interface DnsCredentialSummary {
+  id: number
+  name: string
+  code: string
+  provider?: string
+  provider_code?: string
+}
+
+/** Host dialogs a bundle may open. Every member is optional: feature-detect it. */
+export interface SharedUI {
+  /** Opens the host's DNS credential editor; resolves with the new credential or undefined when cancelled. */
+  openDnsCredentialEditor?: () => Promise<DnsCredentialSummary | undefined>
+}
+
 /** Module instances the host shares with plugin bundles. Never ship your own copy of these. */
 export interface SharedRuntime {
   vue: unknown
@@ -129,6 +144,8 @@ export interface SharedRuntime {
   http: CoreHttpClient
   /** Resolved versions of the shared libraries, keyed by package name. */
   versions: Record<string, string>
+  /** Host dialogs, absent on hosts that predate them. */
+  ui?: SharedUI
 }
 
 export interface NginxUIGlobal {
@@ -138,7 +155,8 @@ export interface NginxUIGlobal {
   registerPlugin: (id: string, definition: NginxUIPlugin) => void
 }
 
-export type SettingsFieldType = 'text' | 'bool' | 'number' | 'select' | 'secret' | 'textarea'
+/** `list` holds an array of strings, rendered as an editable list. */
+export type SettingsFieldType = 'text' | 'bool' | 'number' | 'select' | 'secret' | 'textarea' | 'list'
 
 export interface SettingsOption {
   value: string
