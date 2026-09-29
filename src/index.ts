@@ -244,14 +244,18 @@ export interface DNS01ProviderField {
 }
 
 /**
- * One way to sign in. `fields` lists credential keys; credential fields no
- * method lists are shown with every method.
+ * One way to sign in. `fields` lists credential keys and may be empty;
+ * credential fields no method lists are shown with every method. `values`
+ * are fixed config entries the host stores while the method is chosen and
+ * removes when another method is chosen. A `values` key may also be a
+ * credential field that other methods list, never one this method lists.
  */
 export interface DNS01ProviderMethod {
   /** English gettext msgid. */
   name: string
   recommended?: boolean
   fields: string[]
+  values?: Record<string, string>
 }
 
 /** Credential form layout of a provider, see spec DNS01-14. */
