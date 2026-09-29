@@ -30,6 +30,12 @@ const VERSIONED_LIBS = ['vue', 'vue-router', 'pinia', 'antdv-next', '@vueuse/cor
 export interface NginxUiPluginOptions {
   /** Plugin id from plugin.json, e.g. "com.nginxui.dns01". */
   id: string
+  /**
+   * Names of the on-demand chunks built next to the entry with
+   * nginxUiChunkPlugin. They are listed in manifest.webapp.json as
+   * `chunks`, each pointing at `<project>/<outDir>/chunks/<name>.js`.
+   */
+  chunks?: string[]
   /** Entry file, relative to the project root. Default "src/main.ts". */
   entry?: string
   /** Build output directory, relative to the project root. Default "dist". */
@@ -134,10 +140,15 @@ export function nginxUiPlugin(options: NginxUiPluginOptions): Plugin {
       // inside the plugin repository, so the manifest paths read
       // "webapp/dist/main.js" the way nginx-ui expects, without hardcoding it.
       const projectDirName = path.basename(projectRoot)
-      const manifest = {
+      const manifest: Record<string, unknown> = {
         bundle_path: `${projectDirName}/${outDir}/main.js`,
         style_path: `${projectDirName}/${outDir}/style.css`,
         shared: buildSharedManifest(resolveSharedVersions(projectRoot)),
+      }
+      if (options.chunks?.length) {
+        manifest.chunks = Object.fromEntries(
+          options.chunks.map(name => [name, `${projectDirName}/${outDir}/${chunkFileName(name)}`]),
+        )
       }
 
       this.emitFile({
@@ -146,6 +157,124 @@ export function nginxUiPlugin(options: NginxUiPluginOptions): Plugin {
         source: `${JSON.stringify(manifest, null, 2)}\n`,
       })
     },
+  }
+}
+
+export interface NginxUiChunkOptions {
+  /** Plugin id from plugin.json. */
+  id: string
+  /** Chunk name, the key in `webapp.chunks`: lowercase letters, digits, `_` and `-`. */
+  name: string
+  /** Chunk entry file, relative to the project root. Its exports are what `loadChunk` resolves with. */
+  entry: string
+  /** Build output directory shared with the entry build. Default "dist". */
+  outDir?: string
+  /** Project root. Default the Vite root. */
+  root?: string
+}
+
+/** Output path of a chunk below the output directory. */
+export function chunkFileName(name: string): string {
+  return `chunks/${name}.js`
+}
+
+const CHUNK_NAME = /^[a-z0-9][a-z0-9_-]{0,31}$/
+
+interface BundleFile {
+  type: 'asset' | 'chunk'
+  fileName: string
+  code?: string
+  source?: string | Uint8Array
+}
+
+/**
+ * Finishes a chunk build. Stylesheets are folded into the script as a style
+ * element, because a chunk has no stylesheet of its own in the manifest, and a
+ * `registerChunk` call is appended so the entry module only has to export.
+ */
+export function finishChunkBundle(
+  bundle: Record<string, BundleFile>,
+  options: { id: string, name: string, globalName: string },
+): void {
+  const chunk = Object.values(bundle).find(file => file.type === 'chunk')
+  if (!chunk || chunk.code === undefined)
+    throw new Error(`[nginx-ui-plugin-sdk] chunk "${options.name}" produced no script`)
+
+  let css = ''
+  for (const [key, file] of Object.entries(bundle)) {
+    if (file.type === 'asset' && file.fileName.endsWith('.css')) {
+      css += typeof file.source === 'string' ? file.source : new TextDecoder().decode(file.source)
+      delete bundle[key]
+    }
+  }
+
+  const style = css
+    ? `(function(){var s=document.createElement('style');s.setAttribute('data-nginx-ui-chunk',${JSON.stringify(`${options.id}:${options.name}`)});s.textContent=${JSON.stringify(css)};document.head.appendChild(s)})();\n`
+    : ''
+  const register = `\nwindow.NginxUI.registerChunk(${JSON.stringify(options.id)},${JSON.stringify(options.name)},${options.globalName});\n`
+  chunk.code = `${style}${chunk.code}${register}`
+}
+
+/**
+ * Vite plugin for one on-demand chunk (manifest `webapp.chunks`): an IIFE with
+ * the shared runtime externalized, written to `chunks/<name>.js` without
+ * emptying the output directory the entry build already filled. Run it after
+ * the entry build, one config per chunk.
+ */
+export function nginxUiChunkPlugin(options: NginxUiChunkOptions): Plugin {
+  if (!CHUNK_NAME.test(options.name))
+    throw new Error(`[nginx-ui-plugin-sdk] invalid chunk name "${options.name}"`)
+
+  const outDir = options.outDir ?? 'dist'
+  const globalName = `NginxUIChunk_${sanitizeName(options.id)}_${sanitizeName(options.name)}`
+  let projectRoot = options.root ?? process.cwd()
+
+  return {
+    name: `nginx-ui-plugin-sdk-chunk-${options.name}`,
+    apply: 'build',
+    // Runs after the css plugin emitted the stylesheet.
+    enforce: 'post',
+
+    config(config) {
+      projectRoot = options.root ?? config.root ?? projectRoot
+
+      return {
+        build: {
+          outDir,
+          emptyOutDir: false,
+          cssCodeSplit: false,
+          lib: {
+            entry: path.resolve(projectRoot, options.entry),
+            formats: ['iife'],
+            name: globalName,
+            fileName: () => chunkFileName(options.name),
+            cssFileName: options.name,
+          },
+          rollupOptions: {
+            external: Object.keys(SHARED_EXTERNALS),
+            output: {
+              globals: sharedGlobals(),
+              assetFileNames: 'chunks/[name][extname]',
+            },
+          },
+        },
+      } satisfies UserConfig
+    },
+
+    generateBundle(_options, bundle) {
+      finishChunkBundle(bundle as unknown as Record<string, BundleFile>, {
+        id: options.id,
+        name: options.name,
+        globalName,
+      })
+    },
+  }
+}
+
+/** Ready to use Vite UserConfig that builds one chunk. */
+export function defineNginxUiChunkConfig(options: NginxUiChunkOptions): UserConfig {
+  return {
+    plugins: [nginxUiChunkPlugin(options)],
   }
 }
 
