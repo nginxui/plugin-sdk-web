@@ -64,10 +64,26 @@ export interface NginxLogRowContext {
   row: NginxLogRow
 }
 
-/** Context of `site.log.actions`. A path is an empty string when the site has no such log. */
+/**
+ * What `opts.when` receives for `nginx_log.list.column:{key}`: the list being
+ * shown, not a row. Return false to leave the column out of that list, header
+ * and cells alike.
+ */
+export interface NginxLogColumnWhenContext {
+  type: NginxLogType
+}
+
+/**
+ * Context of `site.log.actions`. A path is an empty string when the site has no
+ * such log. It is the site's own log directive, else the nginx default log the
+ * site falls back to; `...Inherited` is true for that fallback, whose file may
+ * hold the traffic of other sites.
+ */
 export interface SiteLogActionsContext {
   accessLogPath: string
+  accessLogInherited: boolean
   errorLogPath: string
+  errorLogInherited: boolean
   siteName: string
 }
 
@@ -91,7 +107,11 @@ export interface RegisterRouteOptions {
 export interface RegisterSlotOptions {
   /** Lower values render first. */
   order?: number
-  /** Return false to skip rendering for a given context. */
+  /**
+   * Return false to skip rendering for a given context. For
+   * `nginx_log.list.column:{key}` the context is `NginxLogColumnWhenContext`
+   * and decides whether the column exists at all.
+   */
   when?: (ctx: SlotContext) => boolean
   /**
    * Display text, an English source string the host translates. Read by
@@ -173,6 +193,13 @@ export interface PluginRegistry {
   loadChunk?: <T = Record<string, unknown>>(name: string) => Promise<T>
   /** Client whose baseURL is ./api/plugins/{id}/http. */
   http: PluginHttpClient
+  /**
+   * Absolute ws or wss URL of a path under the plugin's http capability,
+   * carrying the credentials the host needs to accept a browser WebSocket.
+   * Never build such a URL yourself. Absent on hosts without WebSocket
+   * support, so check before use.
+   */
+  wsUrl?: (path: string) => string
   /** The host API client, usable only with the `core_api` permission. */
   coreHttp: CoreHttpClient
   manifest: PluginManifest

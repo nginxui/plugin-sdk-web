@@ -45,9 +45,9 @@ The nginx log pages and the site log actions take components through
 | --- | --- | --- |
 | `nginx_log.view:{key}` | `NginxLogViewContext` (`path`, `type`) | `label` (name of the view mode) |
 | `nginx_log.list.toolbar` | `NginxLogListToolbarContext` (`type`) | |
-| `nginx_log.list.column:{key}` | `NginxLogRowContext` (`row`) | `label` (column title), `sortValue`, `filters` |
+| `nginx_log.list.column:{key}` | `NginxLogRowContext` (`row`); `when` gets `NginxLogColumnWhenContext` (`type`) | `label` (column title), `sortValue`, `filters` |
 | `nginx_log.list.row.actions` | `NginxLogRowContext` (`row`) | |
-| `site.log.actions` | `SiteLogActionsContext` (`accessLogPath`, `errorLogPath`, `siteName`) | |
+| `site.log.actions` | `SiteLogActionsContext` (`accessLogPath`, `accessLogInherited`, `errorLogPath`, `errorLogInherited`, `siteName`) | |
 
 ```ts
 registry.registerSlot('nginx_log.list.column:status', StatusCell, {
@@ -60,6 +60,38 @@ registry.registerSlot('nginx_log.list.column:status', StatusCell, {
 `label` texts are English source strings; ship their translations with
 `registerTranslations`. The host sorts and filters plugin columns in the
 browser.
+
+A column's `when` decides on the list, not on a row: it receives
+`{ type }` (`access` or `error`) once per list, and a column it rejects has no
+header and no cells. Register an access log only column once and let `when`
+hide it on the error list:
+
+```ts
+registry.registerSlot('nginx_log.list.column:index_status', StatusCell, {
+  label: 'Index Status',
+  when: ctx => ctx.type === 'access',
+})
+```
+
+For `site.log.actions`, a path is the site's own log directive, else the nginx
+default log the site falls back to, else an empty string. The matching
+`accessLogInherited` or `errorLogInherited` is true for the fallback, whose
+file may hold the traffic of other sites, so an action that is about one site
+should say so or hide itself.
+
+### WebSockets
+
+A browser WebSocket cannot send request headers, so the host authenticates it
+with credentials in the URL. Ask the registry for that URL instead of building
+it, and feature-detect the method:
+
+```ts
+const socket = registry.wsUrl ? new WebSocket(registry.wsUrl('/events')) : undefined
+```
+
+`wsUrl(path)` returns an absolute `ws:` or `wss:` URL for a path under the
+plugin's `http` capability. The host removes the credentials from the request
+before it reaches the plugin.
 
 ### On-demand chunks
 
