@@ -220,23 +220,55 @@ export interface PluginManifestCron {
   method: string
 }
 
-export interface DNS01ProviderConfig {
-  credentials?: Record<string, string>
-  additional?: Record<string, string>
-}
-
 export interface DNS01ProviderLinks {
   api?: string
-  go_client?: string
+}
+
+/** One input of the credential form. `label` and `help` are English gettext msgids. */
+export interface DNS01ProviderField {
+  /** Stored config key. */
+  key: string
+  label: string
+  help?: string
+  /** "credential" or "setting"; settings are shown apart, collapsed. */
+  group: 'credential' | 'setting'
+  optional?: boolean
+  /** Render as a password input. */
+  secret?: boolean
+  /** Value used when left empty, shown as a placeholder. */
+  default?: string
+  /** "seconds" when the value is a number of seconds. */
+  unit?: 'seconds' | ''
+  /** Documentation URL for the field. */
+  link?: string
+}
+
+/**
+ * One way to sign in. `fields` lists credential keys; credential fields no
+ * method lists are shown with every method.
+ */
+export interface DNS01ProviderMethod {
+  /** English gettext msgid. */
+  name: string
+  recommended?: boolean
+  fields: string[]
+}
+
+/** Credential form layout of a provider, see spec DNS01-14. */
+export interface DNS01ProviderForm {
+  /** Every value the provider accepts, in display order. */
+  fields: DNS01ProviderField[]
+  /** Present only when there is more than one way to sign in. */
+  methods?: DNS01ProviderMethod[]
 }
 
 export interface DNS01Provider {
   name: string
   code: string
-  configuration?: DNS01ProviderConfig
   links?: DNS01ProviderLinks
   propagation_timeout_seconds?: number
   polling_interval_seconds?: number
+  form: DNS01ProviderForm
 }
 
 export interface PluginManifestDNS01 {
