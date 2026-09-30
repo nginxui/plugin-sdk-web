@@ -430,6 +430,7 @@ export interface PluginManifest {
   permissions?: (KnownPermission | (string & Record<never, never>))[]
   requires?: PluginRequirement[]
   requires_capabilities?: string[]
+  conflicts?: string[]
   events?: (KnownEventType | (string & Record<never, never>))[]
   cron?: PluginManifestCron[]
   network_hosts?: string[]
