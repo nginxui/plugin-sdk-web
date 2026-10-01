@@ -356,7 +356,7 @@ export interface DNS01ProviderMethod {
   values?: Record<string, string>
 }
 
-/** Credential form layout of a provider, see spec DNS01-14. */
+/** Credential form layout of a provider. */
 export interface DNS01ProviderForm {
   /** Every value the provider accepts, in display order. */
   fields: DNS01ProviderField[]
@@ -382,7 +382,7 @@ export interface PluginManifestHTTP {
   listen: string
 }
 
-/** Permission names the spec defines. `credentials.read:<kind>` carries a credential kind. */
+/** Permission names the host defines. `credentials.read:<kind>` carries a credential kind. */
 export type KnownPermission
   = | 'kv'
     | 'network'
