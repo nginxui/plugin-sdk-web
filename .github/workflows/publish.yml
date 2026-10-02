@@ -1,10 +1,12 @@
 name: Publish
 
 # Publishes @nginxui/plugin-sdk to npm when a version tag is pushed. The tag
-# must match package.json, e.g. v0.1.0 for "version": "0.1.0". The token
-# lives in the "npm" environment as NPM_TOKEN, so the environment can require
-# a reviewer before anything is published. npm attaches a provenance
-# statement that links the package to this workflow run.
+# must match package.json, e.g. v0.1.0 for "version": "0.1.0". npm
+# authenticates through trusted publishing (OIDC) bound to this workflow and
+# the "npm" environment, so no long lived token is stored. Before the trusted
+# publisher is set up on npmjs.com, an NPM_TOKEN secret in that environment is
+# used instead. npm attaches a provenance statement that links the package to
+# this workflow run.
 on:
   push:
     tags: ["v*"]
@@ -26,6 +28,9 @@ jobs:
         with:
           node-version: "22"
           registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install -g npm@11
 
       - name: Check that the tag matches package.json
         run: |
