@@ -1,12 +1,13 @@
 name: Publish
 
-# Publishes @nginxui/plugin-sdk to npm when a version tag is pushed. The tag
-# must match package.json, e.g. v0.1.0 for "version": "0.1.0". npm
-# authenticates through trusted publishing (OIDC) bound to this workflow and
-# the "npm" environment, so no long lived token is stored. Before the trusted
-# publisher is set up on npmjs.com, an NPM_TOKEN secret in that environment is
-# used instead. npm attaches a provenance statement that links the package to
-# this workflow run.
+# Stages @nginxui/plugin-sdk on npm when a version tag is pushed. The tag
+# must match package.json, e.g. v0.1.0 for "version": "0.1.0". A staged
+# version is not live until a maintainer approves it with 2FA, through
+# `npm stage approve <id> --otp <code>` or on npmjs.com. npm authenticates
+# through trusted publishing (OIDC) bound to this workflow and the "npm"
+# environment; before that is set up, a stage only NPM_TOKEN secret in the
+# environment is used instead. npm attaches a provenance statement that links
+# the package to this workflow run.
 on:
   push:
     tags: ["v*"]
@@ -29,8 +30,8 @@ jobs:
           node-version: "22"
           registry-url: https://registry.npmjs.org
 
-      # Trusted publishing needs npm 11.5.1 or later.
-      - run: npm install -g npm@11
+      # Staged publishing needs npm 11.15.0 or later.
+      - run: npm install -g npm@^11.15.0
 
       - name: Check that the tag matches package.json
         run: |
@@ -47,7 +48,7 @@ jobs:
 
       - run: bun test
 
-      - name: npm publish
+      - name: npm stage publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --provenance --access public
+        run: npm stage publish --provenance --access public
