@@ -434,9 +434,20 @@ export interface PluginManifest {
   events?: (KnownEventType | (string & Record<never, never>))[]
   cron?: PluginManifestCron[]
   network_hosts?: string[]
+  /** Why the plugin asks for a permission, keyed by an entry of permissions. */
+  permission_reasons?: Record<string, string>
+  /** Translations keyed by host locale code, e.g. "zh_CN". */
+  i18n?: Record<string, PluginManifestI18n>
   dns01?: PluginManifestDNS01
   http?: PluginManifestHTTP
   settings_schema?: SettingsSchema | null
+}
+
+/** Translates the display fields of a manifest into one language. */
+export interface PluginManifestI18n {
+  name?: string
+  description?: string
+  permission_reasons?: Record<string, string>
 }
 
 declare global {
