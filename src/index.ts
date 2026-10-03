@@ -436,6 +436,8 @@ export interface PluginManifest {
   network_hosts?: string[]
   /** Why the plugin asks for a permission, keyed by an entry of permissions. */
   permission_reasons?: Record<string, string>
+  /** Images of the plugin in use for catalog listings. */
+  screenshots?: PluginManifestScreenshot[]
   /** Translations keyed by host locale code, e.g. "zh_CN". */
   i18n?: Record<string, PluginManifestI18n>
   dns01?: PluginManifestDNS01
@@ -448,6 +450,19 @@ export interface PluginManifestI18n {
   name?: string
   description?: string
   permission_reasons?: Record<string, string>
+  /** Translated screenshot captions, keyed by screenshot id. */
+  screenshot_captions?: Record<string, string>
+}
+
+/** One image of a catalog listing. Paths are relative to the root of the plugin repository at the release tag, not to the package. */
+export interface PluginManifestScreenshot {
+  /** Names the screenshot within the manifest. */
+  id: string
+  path: string
+  /** The same view in the dark theme. */
+  dark_path?: string
+  /** English caption. */
+  caption?: string
 }
 
 declare global {
