@@ -1,6 +1,6 @@
 {
   "name": "@nginxui/plugin-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript SDK for NGINX UI browser plugin bundles",
   "license": "AGPL-3.0-only",
   "type": "module",
