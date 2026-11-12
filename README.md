@@ -172,7 +172,7 @@ export default defineNginxUiPluginConfig({ id: 'io.github.example.myplugin' })
       "vue": ">=3.5.42 <4",
       "vue-router": ">=5.3.1 <6",
       "pinia": ">=4.0.3 <5",
-      "antdv-next": "~1.5",
+      "antdv-next": ">=1.5.4 <2",
       "@vueuse/core": ">=15.0.0"
     }
   }
