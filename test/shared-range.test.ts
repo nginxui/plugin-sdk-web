@@ -36,6 +36,15 @@ describe('rangeForLibrary', () => {
     expect(rangeForLibrary('@vueuse/core', '15.0.0')).toBe('>=15.0.0')
   })
 
+  it('drops prerelease and build metadata from the lower bound', () => {
+    expect(rangeForLibrary('antdv-next', '1.9.0-beta.1')).toBe('>=1.9.0 <2')
+    expect(rangeForLibrary('@vueuse/core', '15.1.0+build.2')).toBe('>=15.1.0')
+  })
+
+  it('fills in a missing minor and patch', () => {
+    expect(rangeForLibrary('vue', '3')).toBe('>=3.0.0 <4')
+  })
+
   it('passes an unparseable version through unchanged', () => {
     expect(rangeForLibrary('vue', 'workspace:*')).toBe('workspace:*')
   })

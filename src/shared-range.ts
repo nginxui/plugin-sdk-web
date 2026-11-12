@@ -44,11 +44,19 @@ export function rangeForLibrary(pkg: string, version: string): string {
     case 'vue-router':
     case 'pinia':
     case 'antdv-next':
-      return `>=${version} <${parsed.major + 1}`
+      return `>=${floor(parsed)} <${parsed.major + 1}`
     case '@vueuse/core':
     default:
-      return `>=${version}`
+      return `>=${floor(parsed)}`
   }
+}
+
+/**
+ * The lower bound of a range: major.minor.patch without prerelease or build
+ * metadata, which the host's range matcher does not accept.
+ */
+function floor({ major, minor, patch }: SemverTriple): string {
+  return `${major}.${minor}.${patch}`
 }
 
 /** Builds the webapp.shared map for every library that resolved to a version. */
