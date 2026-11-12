@@ -26,11 +26,13 @@ export function parseSemver(version: string): SemverTriple | null {
 }
 
 /**
- * Range strategy per shared library, matching the ranges nginx-ui's own
- * webapp/vite.config.ts declares for its dependencies (see app/package.json):
- * vue, vue-router and pinia allow every minor/patch up to (not including) the
- * next major; antdv-next is pinned to major.minor; @vueuse/core has no
- * upper bound.
+ * Range strategy per shared library: vue, vue-router, pinia and antdv-next
+ * allow every minor/patch up to (not including) the next major; @vueuse/core
+ * has no upper bound.
+ *
+ * antdv-next used to be pinned to major.minor. The host upgrades its minor
+ * regularly, and every upgrade then refused every plugin bundle built against
+ * the previous one, so a bundle stopped loading until its plugin was rebuilt.
  */
 export function rangeForLibrary(pkg: string, version: string): string {
   const parsed = parseSemver(version)
@@ -41,13 +43,20 @@ export function rangeForLibrary(pkg: string, version: string): string {
     case 'vue':
     case 'vue-router':
     case 'pinia':
-      return `>=${version} <${parsed.major + 1}`
     case 'antdv-next':
-      return `~${parsed.major}.${parsed.minor}`
+      return `>=${floor(parsed)} <${parsed.major + 1}`
     case '@vueuse/core':
     default:
-      return `>=${version}`
+      return `>=${floor(parsed)}`
   }
+}
+
+/**
+ * The lower bound of a range: major.minor.patch without prerelease or build
+ * metadata, which the host's range matcher does not accept.
+ */
+function floor({ major, minor, patch }: SemverTriple): string {
+  return `${major}.${minor}.${patch}`
 }
 
 /** Builds the webapp.shared map for every library that resolved to a version. */

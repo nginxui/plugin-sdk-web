@@ -28,12 +28,21 @@ describe('rangeForLibrary', () => {
     expect(rangeForLibrary('pinia', '4.0.3')).toBe('>=4.0.3 <5')
   })
 
-  it('pins antdv-next to major.minor', () => {
-    expect(rangeForLibrary('antdv-next', '1.5.4')).toBe('~1.5')
+  it('caps antdv-next below the next major', () => {
+    expect(rangeForLibrary('antdv-next', '1.5.4')).toBe('>=1.5.4 <2')
   })
 
   it('leaves @vueuse/core without an upper bound', () => {
     expect(rangeForLibrary('@vueuse/core', '15.0.0')).toBe('>=15.0.0')
+  })
+
+  it('drops prerelease and build metadata from the lower bound', () => {
+    expect(rangeForLibrary('antdv-next', '1.9.0-beta.1')).toBe('>=1.9.0 <2')
+    expect(rangeForLibrary('@vueuse/core', '15.1.0+build.2')).toBe('>=15.1.0')
+  })
+
+  it('fills in a missing minor and patch', () => {
+    expect(rangeForLibrary('vue', '3')).toBe('>=3.0.0 <4')
   })
 
   it('passes an unparseable version through unchanged', () => {
@@ -52,7 +61,7 @@ describe('buildSharedManifest', () => {
 
     expect(shared).toEqual({
       'vue': '>=3.5.42 <4',
-      'antdv-next': '~1.5',
+      'antdv-next': '>=1.5.4 <2',
     })
   })
 })
