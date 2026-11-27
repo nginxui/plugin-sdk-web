@@ -34,9 +34,12 @@ registerPlugin('io.github.example.myplugin', plugin)
 
 `useShared()` returns `window.NginxUI.shared` (vue, vueRouter, pinia,
 antdvNext, antdvIcons, vueuse, gettext, the `versions` map and the `ui`
-helpers), typed but without importing any of those packages. The host API
-client is not shared: call it through `registry.coreHttp`, which needs the
-`core_api` permission.
+helpers), typed but without importing any of those packages. Call the host
+API through `registry.coreHttp` and declare the `core_api` permission.
+`shared.http` (and importing `@uozi-admin/request`, which the Vite preset maps
+onto it) is deprecated: the host logs a warning on its first use and will
+remove it, together with `coreHttp` for plugins without `core_api`, in a later
+release.
 
 `shared.ui` holds host helpers that need no permission. Each member is
 optional, because older hosts lack it, so check it before use:
@@ -168,8 +171,8 @@ export default defineNginxUiPluginConfig({ id: 'io.github.example.myplugin' })
 `bun run build` (i.e. `vite build`) with this plugin produces:
 
 * `dist/main.js` — one IIFE, `vue`, `vue-router`, `pinia`, `antdv-next`,
-  `@antdv-next/icons`, `@vueuse/core` and `vue3-gettext` externalized onto
-  `window.NginxUI.shared.*`.
+  `@antdv-next/icons`, `@vueuse/core`, `vue3-gettext` and the deprecated
+  `@uozi-admin/request` externalized onto `window.NginxUI.shared.*`.
 * `dist/style.css` — extracted styles, always under this fixed name.
 * `dist/manifest.webapp.json` — the fragment your plugin.json generator
   merges into `webapp`:

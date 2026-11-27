@@ -98,10 +98,11 @@ export { list }
 `)).toEqual([])
   })
 
-  it('the shared runtime no longer carries the host http client', () => {
+  it('the deprecated shared http client still type-checks', () => {
     expect(diagnose(`import type { SharedRuntime } from '../src/index'
 declare const shared: SharedRuntime
-shared.http.get('/dns_credentials')
-`)).not.toEqual([])
+const list = shared.http.get('/dns_credentials')
+export { list }
+`)).toEqual([])
   })
 })

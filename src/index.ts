@@ -244,6 +244,12 @@ export interface SharedRuntime {
   antdvIcons: unknown
   vueuse: unknown
   gettext: unknown
+  /**
+   * @deprecated The host API client. Use `registry.coreHttp` and declare the
+   * `core_api` permission instead: the host logs a deprecation warning on its
+   * first use and will stop publishing it in a later release.
+   */
+  http: CoreHttpClient
   /** Resolved versions of the shared libraries, keyed by package name. */
   versions: Record<string, string>
   /** Host dialogs, absent on hosts that predate them. */
