@@ -33,8 +33,18 @@ registerPlugin('io.github.example.myplugin', plugin)
 ```
 
 `useShared()` returns `window.NginxUI.shared` (vue, vueRouter, pinia,
-antdvNext, antdvIcons, vueuse, gettext, the host http client, and the
-`versions` map), typed but without importing any of those packages.
+antdvNext, antdvIcons, vueuse, gettext, the `versions` map and the `ui`
+helpers), typed but without importing any of those packages. The host API
+client is not shared: call it through `registry.coreHttp`, which needs the
+`core_api` permission.
+
+`shared.ui` holds host helpers that need no permission. Each member is
+optional, because older hosts lack it, so check it before use:
+
+| Member | Returns |
+| --- | --- |
+| `openDnsCredentialEditor()` | Opens the host's DNS credential form; resolves with the new `DnsCredentialSummary`, or `undefined` when cancelled. |
+| `listDnsCredentials()` | Every stored DNS credential of the selected node as `DnsCredentialSummary[]` (`id`, `name`, `code`, `provider`, `provider_code`), never its configuration or secrets. Rejects when the list cannot be read. |
 
 ### Log page slots
 
@@ -158,8 +168,8 @@ export default defineNginxUiPluginConfig({ id: 'io.github.example.myplugin' })
 `bun run build` (i.e. `vite build`) with this plugin produces:
 
 * `dist/main.js` — one IIFE, `vue`, `vue-router`, `pinia`, `antdv-next`,
-  `@antdv-next/icons`, `@vueuse/core`, `vue3-gettext` and
-  `@uozi-admin/request` externalized onto `window.NginxUI.shared.*`.
+  `@antdv-next/icons`, `@vueuse/core` and `vue3-gettext` externalized onto
+  `window.NginxUI.shared.*`.
 * `dist/style.css` — extracted styles, always under this fixed name.
 * `dist/manifest.webapp.json` — the fragment your plugin.json generator
   merges into `webapp`:

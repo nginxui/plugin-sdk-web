@@ -89,4 +89,19 @@ const list: NginxLogColumnWhenContext = { type: 'site' }
 export { list }
 `)).not.toEqual([])
   })
+
+  it('shared.ui.listDnsCredentials is optional and resolves with summaries', () => {
+    expect(diagnose(`import type { DnsCredentialSummary, SharedRuntime } from '../src/index'
+declare const shared: SharedRuntime
+const list: Promise<DnsCredentialSummary[]> | undefined = shared.ui?.listDnsCredentials?.()
+export { list }
+`)).toEqual([])
+  })
+
+  it('the shared runtime no longer carries the host http client', () => {
+    expect(diagnose(`import type { SharedRuntime } from '../src/index'
+declare const shared: SharedRuntime
+shared.http.get('/dns_credentials')
+`)).not.toEqual([])
+  })
 })

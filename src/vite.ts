@@ -1,7 +1,7 @@
 /**
  * Vite preset for building an NGINX UI plugin webapp bundle: one IIFE, vue /
  * vue-router / pinia / antdv-next / @antdv-next/icons / @vueuse/core /
- * vue3-gettext / @uozi-admin/request externalized onto window.NginxUI.shared,
+ * vue3-gettext externalized onto window.NginxUI.shared,
  * a single style.css, and a generated manifest.webapp.json next to it.
  *
  * `vite` is a type-only import here: this module runs inside vite.config.ts,
@@ -21,7 +21,6 @@ export const SHARED_EXTERNALS: Record<string, string> = {
   '@antdv-next/icons': 'antdvIcons',
   '@vueuse/core': 'vueuse',
   'vue3-gettext': 'gettext',
-  '@uozi-admin/request': 'http',
 }
 
 /** Libraries the host reports in window.NginxUI.shared.versions, checked at load time. */

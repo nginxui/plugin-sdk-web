@@ -211,7 +211,10 @@ export interface NginxUIPlugin {
   teardown?: () => void
 }
 
-/** A DNS credential as the host's credential editor returns it. */
+/**
+ * A stored DNS credential as the host hands it to a plugin, without its
+ * configuration or secrets.
+ */
 export interface DnsCredentialSummary {
   id: number
   name: string
@@ -224,6 +227,12 @@ export interface DnsCredentialSummary {
 export interface SharedUI {
   /** Opens the host's DNS credential editor; resolves with the new credential or undefined when cancelled. */
   openDnsCredentialEditor?: () => Promise<DnsCredentialSummary | undefined>
+  /**
+   * Lists every stored DNS credential of the selected node, all pages read.
+   * Rejects when the list cannot be read. Needs no permission, unlike
+   * `registry.coreHttp`.
+   */
+  listDnsCredentials?: () => Promise<DnsCredentialSummary[]>
 }
 
 /** Module instances the host shares with plugin bundles. Never ship your own copy of these. */
@@ -235,7 +244,6 @@ export interface SharedRuntime {
   antdvIcons: unknown
   vueuse: unknown
   gettext: unknown
-  http: CoreHttpClient
   /** Resolved versions of the shared libraries, keyed by package name. */
   versions: Record<string, string>
   /** Host dialogs, absent on hosts that predate them. */
