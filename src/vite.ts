@@ -21,6 +21,7 @@ export const SHARED_EXTERNALS: Record<string, string> = {
   '@antdv-next/icons': 'antdvIcons',
   '@vueuse/core': 'vueuse',
   'vue3-gettext': 'gettext',
+  // Deprecated with shared.http: bundles should use registry.coreHttp.
   '@uozi-admin/request': 'http',
 }
 
